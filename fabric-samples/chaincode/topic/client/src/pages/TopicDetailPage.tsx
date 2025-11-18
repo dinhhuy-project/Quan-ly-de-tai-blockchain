@@ -19,6 +19,7 @@ export const TopicDetailPage = () => {
   const [topic, setTopic] = useState<Topic | null>(null);
   const [approvalStatus, setApprovalStatus] = useState<ApprovalStatus | null>(null);
   const [changeHistory, setChangeHistory] = useState<ChangeHistory[]>([]);
+  const [evaluations, setEvaluations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('details');
@@ -45,12 +46,14 @@ export const TopicDetailPage = () => {
       setTopic(topicData);
       setApprovalStatus(approval);
       setChangeHistory(Array.isArray(history) ? history : []);
+      setEvaluations(topicData.evaluations || []);
       setError(null);
     } catch (err: unknown) {
       const errorMessage = (err as Error).message || 'Không thể tải thông tin đề tài';
       console.error('Load topic error:', err);
       setError(errorMessage);
       setChangeHistory([]);
+      setEvaluations([]);
     } finally {
       setLoading(false);
     }
@@ -136,7 +139,7 @@ export const TopicDetailPage = () => {
 
         {/* Navigation Tabs */}
         <div className="flex gap-4 mb-8 border-b border-gray-200">
-          {['details', 'progress', 'history'].map((tab) => (
+          {['details', 'progress', 'evaluations', 'history'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -148,6 +151,7 @@ export const TopicDetailPage = () => {
             >
               {tab === 'details' && 'Chi Tiết'}
               {tab === 'progress' && 'Tiến Độ'}
+              {tab === 'evaluations' && 'Đánh Giá'}
               {tab === 'history' && 'Lịch Sử'}
             </button>
           ))}
@@ -216,6 +220,36 @@ export const TopicDetailPage = () => {
                   <p>Trạng Thái: {approvalStatus.status}</p>
                   {approvalStatus.approvedBy && <p>Phê Duyệt Bởi: {approvalStatus.approvedBy}</p>}
                   {approvalStatus.approvalDate && <p>Ngày Phê Duyệt: {approvalStatus.approvalDate}</p>}
+                </div>
+              </div>
+            )}
+
+            {/* Evaluations Summary in Details Tab */}
+            {evaluations && evaluations.length > 0 && (
+              <div className="card">
+                <h3 className="font-bold mb-4">Đánh Giá ({evaluations.length})</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded">
+                    <span className="text-gray-700">Đánh Giá Trung Bình</span>
+                    <span className="text-xl font-bold text-blue-600">
+                      {(evaluations.reduce((sum, e) => sum + (e.rating || 0), 0) / evaluations.length).toFixed(1)} / 10
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <p className="mb-2 font-semibold">Nhận xét gần đây nhất:</p>
+                    {evaluations.length > 0 && (
+                      <div className="bg-gray-50 p-3 rounded">
+                        <p className="font-semibold text-gray-700">{evaluations[evaluations.length - 1].supervisorName}</p>
+                        <p className="text-gray-600 mt-1 line-clamp-3">{evaluations[evaluations.length - 1].evaluation}</p>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('evaluations')}
+                    className="text-blue-600 hover:text-blue-800 font-semibold text-sm"
+                  >
+                    Xem tất cả đánh giá →
+                  </button>
                 </div>
               </div>
             )}
@@ -310,6 +344,84 @@ export const TopicDetailPage = () => {
                     <p className="text-sm text-gray-600">Trạng thái: {entry.status} | Bởi: {entry.actor}</p>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Evaluations Tab */}
+        {activeTab === 'evaluations' && (
+          <div className="space-y-6">
+            {/* Evaluation Summary */}
+            {evaluations && evaluations.length > 0 && (
+              <div className="card">
+                <h3 className="font-bold mb-4">Tổng Hợp Đánh Giá</h3>
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-blue-50 p-4 rounded">
+                    <p className="text-gray-600 text-sm">Tổng Số Đánh Giá</p>
+                    <p className="text-2xl font-bold text-blue-600">{evaluations.length}</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded">
+                    <p className="text-gray-600 text-sm">Đánh Giá Trung Bình</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {(evaluations.reduce((sum, e) => sum + (e.rating || 0), 0) / evaluations.length).toFixed(1)} / 10
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Evaluations List */}
+            {evaluations && evaluations.length > 0 ? (
+              <div className="card">
+                <h3 className="font-bold mb-4">Chi Tiết Đánh Giá</h3>
+                <div className="space-y-4">
+                  {evaluations.map((evaluation, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <p className="font-semibold text-gray-800">{evaluation.supervisorName}</p>
+                          <p className="text-sm text-gray-600">ID: {evaluation.supervisorId}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1">
+                            {[...Array(10)].map((_, i) => (
+                              <span
+                                key={i}
+                                className={`text-lg ${
+                                  i < (evaluation.rating || 0) ? 'text-yellow-400' : 'text-gray-300'
+                                }`}
+                              >
+                                ★
+                              </span>
+                            ))}
+                          </div>
+                          <p className="text-sm font-semibold text-gray-700 mt-1">{evaluation.rating || 0}/10</p>
+                        </div>
+                      </div>
+                      <div className="mb-3">
+                        <p className="text-gray-700 whitespace-pre-wrap">{evaluation.evaluation}</p>
+                      </div>
+                      {evaluation.timestamp && (
+                        <p className="text-xs text-gray-500">
+                          Đánh giá vào: {new Date(evaluation.timestamp).toLocaleString('vi-VN')}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="card">
+                <p className="text-gray-600 text-center py-8">Chưa có đánh giá nào cho đề tài này</p>
+              </div>
+            )}
+
+            {/* Supervisor Add Evaluation */}
+            {user?.role === 'supervisor' && topic?.status === 'APPROVED' && (
+              <div className="card">
+                <h3 className="font-bold mb-4">Thêm Đánh Giá</h3>
+                <EvaluationForm topicTitle={topic.title} onSubmit={handleEvaluation} />
               </div>
             )}
           </div>

@@ -26,6 +26,7 @@ export interface Topic {
   updatedAt?: string;
   supervisorId?: string;
   supervisorName?: string;
+  evaluations?: Evaluation[];
 }
 
 export interface Progress {
