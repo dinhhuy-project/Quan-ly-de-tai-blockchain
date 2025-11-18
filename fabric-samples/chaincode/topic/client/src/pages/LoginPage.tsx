@@ -9,12 +9,16 @@ export const LoginPage = () => {
     id: '',
     name: '',
     role: 'student' as 'student' | 'supervisor',
-    organization: 'org1' as 'org1' | 'org2',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const { login } = useAuthStore();
   const navigate = useNavigate();
+
+  // Auto-detect organization based on role
+  const getOrganization = (role: 'student' | 'supervisor'): 'org1' | 'org2' => {
+    return role === 'student' ? 'org1' : 'org2';
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -29,10 +33,11 @@ export const LoginPage = () => {
     setIsSubmitting(true);
 
     setTimeout(() => {
+      const organization = getOrganization(formData.role);
       login({
         id: formData.id,
         name: formData.name,
-        organization: formData.organization,
+        organization: organization,
         role: formData.role,
       });
       setShowSuccess(true);
@@ -83,18 +88,6 @@ export const LoginPage = () => {
             options={[
               { value: 'student', label: 'Sinh Viên' },
               { value: 'supervisor', label: 'Giáo Viên Hướng Dẫn' },
-            ]}
-          />
-
-          <Select
-            label="Tổ Chức"
-            name="organization"
-            value={formData.organization}
-            onChange={handleChange}
-            disabled={isSubmitting}
-            options={[
-              { value: 'org1', label: 'Tổ Chức 1 (Sinh Viên)' },
-              { value: 'org2', label: 'Tổ Chức 2 (Giáo Viên)' },
             ]}
           />
 

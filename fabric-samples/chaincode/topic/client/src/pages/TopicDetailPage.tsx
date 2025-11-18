@@ -41,12 +41,14 @@ export const TopicDetailPage = () => {
         apiClient.getChangeHistory(topicId!),
       ]);
 
+      console.log('Change History:', history);
       setTopic(topicData);
       setApprovalStatus(approval);
       setChangeHistory(Array.isArray(history) ? history : []);
       setError(null);
     } catch (err: unknown) {
       const errorMessage = (err as Error).message || 'Không thể tải thông tin đề tài';
+      console.error('Load topic error:', err);
       setError(errorMessage);
       setChangeHistory([]);
     } finally {
@@ -181,6 +183,32 @@ export const TopicDetailPage = () => {
               <p className="text-gray-700 whitespace-pre-wrap">{topic.description}</p>
             </div>
 
+            {/* Progress Section */}
+            {topic.progress && (
+              <div className="card">
+                <h3 className="font-bold mb-4">Tiến Độ Hiện Tại</h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="font-semibold">Giai Đoạn: <span className="text-blue-600">{topic.progress.stage}</span></span>
+                      <span className="font-semibold">{topic.progress.percentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className="bg-blue-600 h-3 rounded-full transition-all"
+                        style={{ width: `${topic.progress.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                  {topic.progress.lastUpdate && (
+                    <p className="text-sm text-gray-600">
+                      Cập nhật lần cuối: {new Date(topic.progress.lastUpdate).toLocaleString('vi-VN')}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
             {approvalStatus && (
               <div className="card">
                 <h3 className="font-bold mb-4">Trạng Thái Phê Duyệt</h3>
@@ -211,10 +239,57 @@ export const TopicDetailPage = () => {
         {/* Progress Tab */}
         {activeTab === 'progress' && (
           <div className="space-y-6">
+            {/* Current Progress */}
+            {topic.progress && (
+              <div className="card">
+                <h3 className="font-bold mb-4">Tiến Độ Hiện Tại</h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="font-semibold">Giai Đoạn: <span className="text-blue-600 text-lg">{topic.progress.stage}</span></span>
+                      <span className="font-semibold text-lg">{topic.progress.percentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-4">
+                      <div
+                        className="bg-blue-600 h-4 rounded-full transition-all"
+                        style={{ width: `${topic.progress.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                  {topic.progress.lastUpdate && (
+                    <p className="text-sm text-gray-600">
+                      Cập nhật lần cuối: {new Date(topic.progress.lastUpdate).toLocaleString('vi-VN')}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Update Progress for Student */}
             {user?.role === 'student' && (
               <div className="card">
                 <h3 className="font-bold mb-4">Cập Nhật Tiến Độ</h3>
                 <UpdateProgressForm onSubmit={handleUpdateProgress} />
+              </div>
+            )}
+
+            {/* Progress Update History */}
+            {topic.progress?.updates && topic.progress.updates.length > 0 && (
+              <div className="card">
+                <h3 className="font-bold mb-4">Lịch Sử Cập Nhật Tiến Độ</h3>
+                <div className="space-y-4">
+                  {topic.progress.updates.map((update, index) => (
+                    <div key={index} className="border-l-4 border-green-500 pl-4 py-2 bg-gray-50 rounded">
+                      <p className="font-semibold text-sm text-gray-600">
+                        {new Date(update.timestamp).toLocaleString('vi-VN')}
+                      </p>
+                      <p className="text-gray-700 mt-1">
+                        <span className="font-semibold">Giai đoạn:</span> {update.stage} - <span className="font-semibold">Tiến độ:</span> {update.percentage}%
+                      </p>
+                      <p className="text-gray-700 text-sm mt-1"><span className="font-semibold">Chi tiết:</span> {update.details}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -230,9 +305,9 @@ export const TopicDetailPage = () => {
               <div className="space-y-4">
                 {changeHistory.map((entry, index) => (
                   <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
-                    <p className="font-semibold text-sm text-gray-600">{entry.timestamp}</p>
-                    <p className="text-gray-700">{entry.change}</p>
-                    <p className="text-sm text-gray-600">Bởi: {entry.modifiedBy}</p>
+                    <p className="font-semibold text-sm text-gray-600">{new Date(entry.timestamp).toLocaleString('vi-VN')}</p>
+                    <p className="text-gray-700"><span className="font-semibold">{entry.action}:</span> {entry.details}</p>
+                    <p className="text-sm text-gray-600">Trạng thái: {entry.status} | Bởi: {entry.actor}</p>
                   </div>
                 ))}
               </div>

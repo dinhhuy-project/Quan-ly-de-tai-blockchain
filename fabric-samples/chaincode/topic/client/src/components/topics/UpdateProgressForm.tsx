@@ -57,12 +57,11 @@ export const UpdateProgressForm = ({ onSubmit, isLoading = false }: UpdateProgre
         error={errors.stage}
         disabled={isLoading}
         options={[
-          { value: 'Planning', label: 'Lập kế hoạch' },
-          { value: 'Research', label: 'Nghiên cứu' },
-          { value: 'Development', label: 'Phát triển' },
-          { value: 'Testing', label: 'Kiểm thử' },
-          { value: 'Deployment', label: 'Triển khai' },
-          { value: 'Review', label: 'Đánh giá' },
+          { value: 'INITIAL', label: 'Ban Đầu' },
+          { value: 'ANALYSIS', label: 'Phân Tích' },
+          { value: 'DEVELOPMENT', label: 'Phát Triển' },
+          { value: 'TESTING', label: 'Kiểm Thử' },
+          { value: 'COMPLETED', label: 'Hoàn Thành' },
         ]}
       />
 

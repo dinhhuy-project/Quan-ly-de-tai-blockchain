@@ -51,8 +51,9 @@ export class ApiClient {
   }
 
   async getChangeHistory(topicId: string): Promise<ChangeHistory[]> {
-    const response = await this.client.get(`/topics/${topicId}/change-history`);
-    return response.data.data;
+    const response = await this.client.get(`/topics/${topicId}`);
+    const topic = response.data.data;
+    return topic.history || [];
   }
 
   // ==================== SUPERVISOR OPERATIONS ====================

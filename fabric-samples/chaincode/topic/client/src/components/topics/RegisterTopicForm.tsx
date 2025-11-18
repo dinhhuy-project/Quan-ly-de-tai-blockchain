@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Input, TextArea, Select } from '@/components/common/ui';
+import { useAuthStore } from '@/store/authStore';
 
 interface RegisterTopicFormProps {
   onSubmit: (data: any) => Promise<void>;
@@ -7,6 +8,7 @@ interface RegisterTopicFormProps {
 }
 
 export const RegisterTopicForm = ({ onSubmit, isLoading = false }: RegisterTopicFormProps) => {
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState({
     topicId: '',
     title: '',
@@ -15,6 +17,17 @@ export const RegisterTopicForm = ({ onSubmit, isLoading = false }: RegisterTopic
     studentName: '',
     field: '',
   });
+
+  // Auto-fill student info from current user
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        studentId: user.id,
+        studentName: user.name,
+      }));
+    }
+  }, [user]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -91,25 +104,7 @@ export const RegisterTopicForm = ({ onSubmit, isLoading = false }: RegisterTopic
         rows={4}
       />
 
-      <Input
-        label="ID Sinh Viên"
-        name="studentId"
-        placeholder="SV001"
-        value={formData.studentId}
-        onChange={handleChange}
-        error={errors.studentId}
-        disabled={isLoading}
-      />
-
-      <Input
-        label="Tên Sinh Viên"
-        name="studentName"
-        placeholder="Nguyễn Văn A"
-        value={formData.studentName}
-        onChange={handleChange}
-        error={errors.studentName}
-        disabled={isLoading}
-      />
+      {/* Student ID and Name are auto-filled from current user */}
 
       <Select
         label="Lĩnh Vực"

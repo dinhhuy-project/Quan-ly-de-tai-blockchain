@@ -414,3 +414,95 @@ exports.getTopicsByField = async (req, res, next) => {
         });
     }
 };
+
+/**
+ * GET /api/fabric/blockchain-info
+ * Lấy thông tin blockchain hiện tại
+ */
+exports.getBlockchainInfo = async (req, res, next) => {
+    try {
+        console.log("Fetching blockchain info...");
+
+        await fabricClient.initializeFabricConnection("org1"); // hoặc dynamic theo req
+        const info = await fabricClient.getBlockchainInfo();
+
+        res.status(200).json({
+            success: true,
+            data: info
+        });
+    } catch (error) {
+        next({
+            status: 500,
+            message: error.message || "Failed to fetch blockchain info",
+            details: error.toString()
+        });
+    }
+};
+
+/**
+ * GET /api/fabric/blocks/:number
+ * Lấy 1 block theo số
+ */
+exports.getBlockByNumber = async (req, res, next) => {
+    try {
+        const { number } = req.params;
+
+        console.log(`Fetching block #${number}`);
+
+        await fabricClient.initializeFabricConnection("org1");
+        const block = await fabricClient.getBlockByNumber(parseInt(number));
+
+        res.status(200).json({
+            success: true,
+            blockNumber: number,
+            data: block
+        });
+    } catch (error) {
+        next({
+            status: 500,
+            message: error.message || "Failed to fetch block",
+            details: error.toString()
+        });
+    }
+};
+
+/**
+ * GET /api/fabric/blocks
+ * Lấy toàn bộ block trong blockchain
+ */
+exports.getAllBlocks = async (req, res, next) => {
+    try {
+        console.log("Fetching ALL blocks...");
+
+        await fabricClient.initializeFabricConnection("org1");
+        const blocks = await fabricClient.getAllBlocks();
+
+        res.status(200).json({
+            success: true,
+            total: blocks.length,
+            data: blocks
+        });
+    } catch (error) {
+        next({
+            status: 500,
+            message: error.message || "Failed to fetch all blocks",
+            details: error.toString()
+        });
+    }
+};
+
+exports.getAllTransactions = async (req, res) => {
+    try {
+        await fabricClient.initializeFabricConnection("org1");
+
+        const txns = await fabricClient.getAllTransactions();
+
+        res.json({
+            success: true,
+            count: txns.length,
+            data: txns
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+};

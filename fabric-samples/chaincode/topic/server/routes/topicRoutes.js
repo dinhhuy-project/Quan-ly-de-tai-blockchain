@@ -93,4 +93,10 @@ router.get('/status/:status', topicController.getTopicsByStatus);
  */
 router.get('/field/:field', topicController.getTopicsByField);
 
+router.get("/fabric/blockchain-info", topicController.getBlockchainInfo);
+router.get("/fabric/blocks", topicController.getAllBlocks);
+router.get("/fabric/blocks/:number", topicController.getBlockByNumber);
+router.get("/fabric/transactions", topicController.getAllTransactions);
+
+
 module.exports = router;

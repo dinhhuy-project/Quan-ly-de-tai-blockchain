@@ -1,14 +1,31 @@
 export interface Topic {
   topicId: string;
   title: string;
-  description: string;
-  studentId: string;
-  studentName: string;
-  field: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED';
+  description?: string;
+  studentId?: string;
+  studentName?: string;
+  field?: string;
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED';
   createdAt?: string;
   approvalComments?: string;
   rejectionReason?: string;
+  history?: ChangeHistory[];
+  progress?: {
+    stage: string;
+    percentage: number;
+    lastUpdate?: string;
+    updates?: Array<{
+      timestamp: string;
+      stage: string;
+      percentage: number;
+      details: string;
+    }>;
+  };
+  approvedBy?: string;
+  comments?: string;
+  updatedAt?: string;
+  supervisorId?: string;
+  supervisorName?: string;
 }
 
 export interface Progress {
@@ -36,8 +53,10 @@ export interface ApprovalStatus {
 
 export interface ChangeHistory {
   timestamp: string;
-  change: string;
-  modifiedBy: string;
+  action: string;
+  status: string;
+  actor: string;
+  details: string;
 }
 
 export interface User {

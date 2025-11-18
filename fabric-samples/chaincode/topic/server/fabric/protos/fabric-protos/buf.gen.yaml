@@ -1,0 +1,135 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: java_multiple_files
+      value: true
+    - file_option: java_package_prefix
+      value: org.hyperledger.fabric.protos
+    - file_option: go_package_prefix
+      value: github.com/hyperledger/fabric-protos-go-apiv2
+    - file_option: java_outer_classname
+      path: common/configtx.proto
+      value: ConfigTxProto
+    - file_option: java_outer_classname
+      path: ledger/queryresult/kv_query_result.proto
+      value: KVQueryResultProto
+    - file_option: java_outer_classname
+      path: ledger/rwset/kvrwset/kv_rwset.proto
+      value: KVRWSetProto
+    - file_option: java_outer_classname
+      path: ledger/rwset/rwset.proto
+      value: RWSetProto
+    - file_option: java_outer_classname
+      path: msp/msp_config.proto
+      value: MSPConfigProto
+    - file_option: java_outer_classname
+      path: msp/msp_principal.proto
+      value: MSPPrincipalProto
+    - file_option: java_package
+      path: google/rpc/status.proto
+      value: com.google.rpc
+    - file_option: java_package
+      path: ledger/queryresult/kv_query_result.proto
+      value: org.hyperledger.fabric.protos.ledger.queryresult
+    - file_option: java_package
+      path: ledger/rwset/kvrwset/kv_rwset.proto
+      value: org.hyperledger.fabric.protos.ledger.rwset.kvrwset
+    - file_option: java_package
+      path: ledger/rwset/rwset.proto
+      value: org.hyperledger.fabric.protos.ledger.rwset
+    - file_option: java_package
+      path: msp/msp_principal.proto
+      value: org.hyperledger.fabric.protos.common
+    - file_option: java_package
+      path: orderer/etcdraft/configuration.proto
+      value: org.hyperledger.fabric.protos.orderer.etcdraft
+    - file_option: java_package
+      path: orderer/etcdraft/metadata.proto
+      value: org.hyperledger.fabric.protos.orderer.etcdraft
+    - file_option: java_package
+      path: peer/chaincode.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/chaincode_event.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/chaincode_shim.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/collection.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/configuration.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/events.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/lifecycle/chaincode_definition.proto
+      value: org.hyperledger.fabric.protos.peer.lifecycle
+    - file_option: java_package
+      path: peer/lifecycle/db.proto
+      value: org.hyperledger.fabric.protos.peer.lifecycle
+    - file_option: java_package
+      path: peer/lifecycle/lifecycle.proto
+      value: org.hyperledger.fabric.protos.peer.lifecycle
+    - file_option: java_package
+      path: peer/peer.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/policy.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/proposal.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/proposal_response.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/query.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/resources.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/signed_cc_dep_spec.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/snapshot.proto
+      value: org.hyperledger.fabric.protos.peer
+    - file_option: java_package
+      path: peer/transaction.proto
+      value: org.hyperledger.fabric.protos.peer
+plugins:
+  - local: protoc-gen-doc
+    out: docs
+    opt:
+      - markdown
+      - protos.md
+    strategy: all
+  - local: protoc-gen-go
+    out: bindings/go-apiv2
+    opt: paths=source_relative
+  - local: protoc-gen-go-grpc
+    out: bindings/go-apiv2
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=false
+  - protoc_builtin: java
+    out: bindings/java/src/main/java
+  - local: protoc-gen-grpc-java
+    out: bindings/java/src/main/java
+  - protoc_builtin: js
+    out: bindings/node/src
+    opt:
+      - import_style=commonjs
+      - binary
+  - local: grpc_tools_node_protoc_plugin
+    out: bindings/node/src
+    opt: grpc_js
+  - local: protoc-gen-ts
+    out: bindings/node/src
+    opt:
+      - service=grpc-node
+      - mode=grpc-js

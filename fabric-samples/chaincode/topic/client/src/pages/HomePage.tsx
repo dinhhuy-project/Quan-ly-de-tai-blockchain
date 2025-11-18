@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 export const HomePage = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const { topics, loading, error, fetchTopics, fetchTopicsByStudent, fetchTopicsBySupervisor } = useTopicStore();
+  const { topics, loading, error, fetchTopics, fetchTopicsByStudent } = useTopicStore();
   const [filterStatus, setFilterStatus] = useState('ALL');
 
   useEffect(() => {
@@ -25,7 +25,8 @@ export const HomePage = () => {
     if (user.role === 'student') {
       fetchTopicsByStudent(user.id);
     } else {
-      fetchTopicsBySupervisor(user.id);
+      // Giáo viên xem tất cả các topics
+      fetchTopics();
     }
   }, [user, navigate]);
 
