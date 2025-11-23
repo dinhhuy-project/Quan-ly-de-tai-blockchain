@@ -170,21 +170,20 @@ function decodeBlock(buffer) {
    ⭐ Get blockchain info via QSCC
 ----------------------------------------------*/
 async function getBlockchainInfo() {
-    if (!network) throw new Error('Fabric not connected.');
+    if (!network) throw new Error("Fabric not connected.");
 
-    const qscc = network.getContract('qscc');
+    const qscc = network.getContract("qscc");
+    const channelName = network.getChannel().name;
 
-    const result = await qscc.evaluateTransaction(
-        'GetChainInfo',
-        network.getChannel().name
-    );
+    const infoBytes = await qscc.evaluateTransaction("GetChainInfo", channelName);
 
-    const blockInfo = fabproto6.common.BlockchainInfo.decode(result);
+    // ⛔ Không được JSON.parse → phải decode protobuf
+    const info = fabproto6.common.BlockchainInfo.decode(infoBytes);
 
     return {
-        height: blockInfo.height,
-        currentBlockHash: blockInfo.currentBlockHash.toString('hex'),
-        previousBlockHash: blockInfo.previousBlockHash.toString('hex'),
+        height: Number(info.height),
+        currentBlockHash: Buffer.from(info.currentBlockHash).toString("hex"),
+        previousBlockHash: Buffer.from(info.previousBlockHash).toString("hex"),
     };
 }
 
@@ -192,18 +191,20 @@ async function getBlockchainInfo() {
    ⭐ Get block by number
 ----------------------------------------------*/
 async function getBlockByNumber(blockNumber) {
-    if (!network) throw new Error('Fabric not connected.');
+    if (!network) throw new Error("Fabric not connected.");
 
-    const qscc = network.getContract('qscc');
+    const qscc = network.getContract("qscc");
+    const channelName = network.getChannel().name;
 
-    const result = await qscc.evaluateTransaction(
-        'GetBlockByNumber',
-        network.getChannel().name,
+    const blockBytes = await qscc.evaluateTransaction(
+        "GetBlockByNumber",
+        channelName,
         blockNumber.toString()
     );
 
-    return decodeBlock(result);
+    return fabproto6.common.Block.decode(blockBytes);
 }
+
 
 /* -------------------------------------------
    ⭐ Get all blocks
@@ -230,12 +231,11 @@ const protobuf = require('protobufjs');
 
 async function loadProto() {
     const root = new protobuf.Root();
-    await root.load(
-        [
-            path.join(__dirname, 'protos/fabric-protos/'),
-        ],
-        { keepCase: true }
-    );
+    await root.load([
+        path.join(__dirname, "protos/common.proto"),
+        path.join(__dirname, "protos/ledger.proto"),
+        path.join(__dirname, "protos/trans.proto")
+    ], { keepCase: true });
 
     return root;
 }
@@ -270,51 +270,69 @@ async function parseBlock25(block, root) {
 
     return txList;
 }
-async function getAllTransactions() {
-    if (!contract) throw new Error('Fabric not connected.');
+function decodeBlockMinimal(block) {
+    const result = {
+        blockNumber: Number(block.header.number),
+        tx: []
+    };
 
-    const network = contract.network;
-    const qscc = network.getContract('qscc');
-    const channelName = network.getChannel().name;
+    if (!block.data || !block.data.data) return result;
 
-    // Load protobuf root
-    const root = await loadProto();
-
-    // Lấy blockchain info
-    const infoBytes = await qscc.evaluateTransaction(
-        'GetChainInfo',
-        channelName
-    );
-    const BlockchainInfo = root.lookupType('common.BlockchainInfo');
-    const info = BlockchainInfo.decode(infoBytes);
-
-    const height = info.height.toNumber();
-    console.log('📦 Blockchain Height:', height);
-
-    let allTx = [];
-
-    for (let i = 0; i < height; i++) {
-        console.log(`📥 Reading block ${i} ...`);
+    for (const envBytes of block.data.data) {
         try {
-            const blockBytes = await qscc.evaluateTransaction(
-                'GetBlockByNumber',
-                channelName,
-                String(i)
-            );
+            const env = fabproto6.common.Envelope.decode(envBytes);
+            const payload = fabproto6.common.Payload.decode(env.payload);
+            const ch = fabproto6.common.ChannelHeader.decode(payload.header.channel_header);
 
-            const Block = root.lookupType('common.Block');
-            const block = Block.decode(blockBytes);
+            const sh = fabproto6.common.SignatureHeader.decode(payload.header.signature_header);
+            const creator = fabproto6.msp.SerializedIdentity.decode(sh.creator);
 
-            const txList = await parseBlock25(block, root);
-            allTx.push(...txList);
-        } catch (err) {
-            console.log(`❌ Failed block ${i}:`, err.message);
+            result.tx.push({
+                blockNumber: Number(block.header.number),
+                txId: ch.tx_id,
+                timestamp: ch.timestamp,
+                creatorMSP: creator.mspid,
+                type: ch.type,
+                channelId: ch.channel_id
+            });
+        } 
+        catch (err) {
+            result.tx.push({ error: err.message });
         }
     }
 
-    console.log(`✅ Total TX: ${allTx.length}`);
+    return result;
+}
 
-    return allTx;
+async function getAllTransactions() {
+    if (!network) throw new Error("Fabric not connected.");
+
+    const { height } = await getBlockchainInfo();
+
+    console.log(`📦 Blockchain height = ${height}`);
+
+    let txs = [];
+
+    for (let i = 0; i < height; i++) {
+        console.log(`📥 Reading block ${i} ...`);
+
+        const block = await getBlockByNumber(i);
+        const minimal = decodeBlockMinimal(block);
+
+        if (minimal.tx.length > 0) {
+            txs.push(...minimal.tx);
+        }
+    }
+
+    console.log(`✅ Total tx found: ${txs.length}`);
+
+    return txs;
+}
+
+async function getTransactionByNumber(blockNumber) {
+    const block = await getBlockByNumber(blockNumber);
+    const minimal = decodeBlockMinimal(block);
+    return minimal.tx;
 }
 
 module.exports = {
@@ -328,4 +346,5 @@ module.exports = {
     getBlockByNumber,
     getAllBlocks,
     getAllTransactions,
+    getTransactionByNumber,
 };

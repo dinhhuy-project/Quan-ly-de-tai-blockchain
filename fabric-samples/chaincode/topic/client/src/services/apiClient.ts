@@ -138,6 +138,11 @@ export class ApiClient {
     const response = await this.client.get('/topics/fabric/transactions');
     return response.data.data;
   }
+
+  async getTransactionByNumber(blockNumber: number): Promise<any> {
+    const response = await this.client.get(`/topics/fabric/transactions/${blockNumber}`);
+    return response.data.data;
+  }
 }
 
 export const apiClient = new ApiClient();

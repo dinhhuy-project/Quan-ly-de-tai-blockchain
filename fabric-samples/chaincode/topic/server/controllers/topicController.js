@@ -514,3 +514,29 @@ exports.getAllTransactions = async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 };
+
+exports.getTransactionByNumber = async (req, res) => {
+    try {
+        const { number } = req.params;
+
+        // Validate block number
+        if (!number || isNaN(parseInt(number))) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or missing block number parameter'
+            });
+        }
+
+        await fabricClient.initializeFabricConnection("org1");
+
+        const txDetails = await fabricClient.getTransactionByNumber(parseInt(number));
+
+        res.json({
+            success: true,
+            blockNumber: number,
+            data: txDetails
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}

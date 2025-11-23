@@ -97,6 +97,7 @@ router.get("/fabric/blockchain-info", topicController.getBlockchainInfo);
 router.get("/fabric/blocks", topicController.getAllBlocks);
 router.get("/fabric/blocks/:number", topicController.getBlockByNumber);
 router.get("/fabric/transactions", topicController.getAllTransactions);
+router.get("/fabric/transactions/:number", topicController.getTransactionByNumber);
 
 
 module.exports = router;

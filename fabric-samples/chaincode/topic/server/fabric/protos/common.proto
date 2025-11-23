@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package common;
+
+message Envelope {
+    bytes signature = 1;
+    bytes payload = 2;
+}
+
+message Payload {
+    Header header = 1;
+    bytes data = 2;
+}
+
+message Header {
+    ChannelHeader channel_header = 1;
+    SignatureHeader signature_header = 2;
+}
+
+message ChannelHeader {
+    int32 type = 1;
+    int32 version = 2;
+    string timestamp = 3;
+    string channel_id = 4;
+    string tx_id = 5;
+    string epoch = 6;
+}
+
+message SignatureHeader {
+    bytes creator = 1;
+    bytes nonce = 2;
+}
+
+message BlockchainInfo {
+    bytes currentBlockHash = 1;
+    bytes previousBlockHash = 2;
+    uint64 height = 3;
+}
+
+message Block {
+    uint64 header_number = 1;
+    bytes header_previous_hash = 2;
+    bytes header_data_hash = 3;
+
+    BlockData data = 4;
+}
+
+message BlockData {
+    repeated bytes data = 1;
+}

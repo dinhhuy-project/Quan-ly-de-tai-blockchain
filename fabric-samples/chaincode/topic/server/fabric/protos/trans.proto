@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package transact;
+
+import "common.proto";
+
+message Transaction {
+    repeated TransactionAction actions = 1;
+}
+
+message TransactionAction {
+    bytes header = 1;
+    bytes payload = 2;
+}
