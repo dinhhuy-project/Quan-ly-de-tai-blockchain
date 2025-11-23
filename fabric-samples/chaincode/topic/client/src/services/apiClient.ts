@@ -116,6 +116,28 @@ export class ApiClient {
     const response = await this.client.get(`/topics/field/${field}`);
     return response.data.data;
   }
+
+  // ==================== BLOCKCHAIN EXPLORER OPERATIONS ====================
+
+  async getBlockchainInfo(): Promise<any> {
+    const response = await this.client.get('/topics/fabric/blockchain-info');
+    return response.data.data;
+  }
+
+  async getAllBlocks(): Promise<any[]> {
+    const response = await this.client.get('/topics/fabric/blocks');
+    return response.data.data;
+  }
+
+  async getBlockByNumber(blockNumber: number): Promise<any> {
+    const response = await this.client.get(`/topics/fabric/blocks/${blockNumber}`);
+    return response.data.data;
+  }
+
+  async getAllTransactions(): Promise<any[]> {
+    const response = await this.client.get('/topics/fabric/transactions');
+    return response.data.data;
+  }
 }
 
 export const apiClient = new ApiClient();

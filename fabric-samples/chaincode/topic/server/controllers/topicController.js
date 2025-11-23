@@ -447,6 +447,14 @@ exports.getBlockByNumber = async (req, res, next) => {
     try {
         const { number } = req.params;
 
+        // Validate block number
+        if (!number || isNaN(parseInt(number))) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or missing block number parameter'
+            });
+        }
+
         console.log(`Fetching block #${number}`);
 
         await fabricClient.initializeFabricConnection("org1");

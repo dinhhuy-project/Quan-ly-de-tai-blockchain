@@ -4,6 +4,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { HomePage } from '@/pages/HomePage';
 import { RegisterTopicPage } from '@/pages/RegisterTopicPage';
 import { TopicDetailPage } from '@/pages/TopicDetailPage';
+import { BlockchainExplorerPage } from '@/pages/BlockchainExplorerPage';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 
 function App() {
@@ -36,6 +37,15 @@ function App() {
           element={
             <ProtectedRoute>
               <TopicDetailPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/blockchain-explorer"
+          element={
+            <ProtectedRoute>
+              <BlockchainExplorerPage />
             </ProtectedRoute>
           }
         />

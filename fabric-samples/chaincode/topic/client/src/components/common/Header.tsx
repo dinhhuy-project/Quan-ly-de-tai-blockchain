@@ -39,6 +39,16 @@ export const Header = () => {
         <div className={`${mobileMenuOpen ? 'flex' : 'hidden'} md:flex gap-4 items-center flex-col md:flex-row`}>
           {user && (
             <>
+              <button
+                onClick={() => {
+                  navigate('/blockchain-explorer');
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-2 px-3 py-2 rounded hover:bg-blue-700 transition-colors"
+              >
+                <FiActivity size={18} />
+                <span className="hidden sm:inline">Blockchain Explorer</span>
+              </button>
               <div className="text-right text-sm">
                 <p className="font-semibold">{user.name}</p>
                 <p className="text-blue-100">{getRoleLabel(user.role)}</p>
